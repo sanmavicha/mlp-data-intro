@@ -166,7 +166,9 @@ counts_combined_clean$date <- date(counts_combined_clean$date)
 
 ```
 
-# Figure 1- Good vs Bad Spikes
+# Figure 1 is the workflow figure, not made here
+
+# Figure 2- Good vs Bad Spikes
 
 ```{r}
 # Extract Ghana Data, only national, for a good spike
@@ -176,7 +178,7 @@ ghana_spike <- counts_combined_clean %>%
 
 figure_1a <- ggplot(ghana_spike, aes(x = date, y = true_article_total)) +
   geom_line(stat = "identity", color = "blue") +
-  labs(x = "Date", y = "Article Totals", title = "Figure 1a: Ghana - True Spike") +
+  labs(x = "Date", y = "Article Totals", title = "Figure 2a: Ghana - True Spike") +
   theme_bw()
 
 ```
@@ -191,7 +193,7 @@ zambia_old$date <- date(zambia_old$date)
 
 figure_1b <- ggplot(zambia_old, aes(x = date, y = total)) +
   geom_line(stat = "identity", color = "red") +
-  labs(x = "Date", y = "Article Totals", title = "Figure 1b: Zambia - False Spike") +
+  labs(x = "Date", y = "Article Totals", title = "Figure 2b: Zambia - False Spike") +
   theme_bw()
 
 ```
@@ -201,13 +203,13 @@ figure_1b <- ggplot(zambia_old, aes(x = date, y = total)) +
 figure_1 <- grid.arrange(figure_1a,
                       figure_1b,
                       nrow = 1,
-                      top = textGrob("Figure 1: A True Spike and A False Spike",gp=gpar(fontsize=20,font=3)))
+                      top = textGrob("Figure 2: A True Spike and A False Spike",gp=gpar(fontsize=20,font=3)))
 
 ggsave("figures/figure_1.jpg", plot = figure_1, height = 5, width = 7)
 ```
 
 # Figure 6 - Indonesia Case Study
-Figure 3 comes before Figure 2 because we will combine regional and international for figure 2
+Figure 6 comes before Figure 3 because we will combine regional and international for figure 3
 
 ```{r}
 
@@ -263,7 +265,7 @@ blankPlot <- ggplot()+geom_blank(aes(1,1)) +
 plot_indonesia <- grid.arrange(indonesia_corruption, indonesia_arrest, legend,
              ncol=3, nrow = 1, 
              widths = c(2, 2, .75), heights = c(5.45),
-             top = textGrob("Figure 5: Indonesia 2024 Case Study",gp=gpar(fontsize=20,font=3)))
+             top = textGrob("Figure 6: Indonesia 2024 Case Study",gp=gpar(fontsize=20,font=3)))
 
 ggsave("figures/figure_6_indonesia.jpg", plot = plot_indonesia, height = 5, width = 7)
 
@@ -403,7 +405,7 @@ topic_share_long_stack$average_cor_char <- dropLeadingZero(topic_share_long_stac
 
 figure_3 <- ggplot(topic_share_long_stack, aes(x = c(variable))) + 
   geom_bar(aes(y = value, fill=name), stat="identity", position = "fill", alpha = .5) +
-  labs(y="Share", x = "", color = "legend", title = "Figure 2: International Share of Normalized Articles \n With Correlations") + 
+  labs(y="Share", x = "", color = "legend", title = "Figure 3: International Share of Normalized Articles \n With Correlations") + 
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
@@ -414,6 +416,7 @@ figure_3
 
 ggsave("figures/figure_3.jpg", plot = figure_3, height = 5, width = 7)
 ```
+
 
 # Figure 4- Event Share by Topic, International and National
 
@@ -494,7 +497,7 @@ event_share_long$variable <- factor(event_share_long$variable,
 figure_4_alternative <- ggplot(event_share_long, aes(x = c(variable))) + 
   geom_bar(aes(y = international, group = 1, fill="International"), stat="identity", alpha = 0.5) +
   geom_bar(aes(y = local, group = 1, fill="National"), stat="identity", alpha = 0.2) +
-  labs(y="Frequency", x = "", color = "legend", title = "Figure 3: Event Share of Total by \n International and National") + 
+  labs(y="Frequency", x = "", color = "legend", title = "Figure 4: Event Share of Total by \n International and National") + 
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
@@ -502,7 +505,7 @@ figure_4_alternative <- ggplot(event_share_long, aes(x = c(variable))) +
 
 figure_4_alternative
 
-ggsave("figures/figure_4.jpg", plot = figure_3, height = 5, width = 7)
+# ggsave("figures/figure_4.jpg", plot = figure_3, height = 5, width = 7)
 
 ggsave("figures/figure_4_alternative.jpg", plot = figure_4_alternative, height = 5, width = 7)
 ```
@@ -560,10 +563,11 @@ figure_5_alternative_old <- ggplot(country_share_wide, aes(x = International, y 
 figure_5_alternative_old
 
 
-ggsave("figures/figure_5_old.jpg", plot = figure_5_alternative_old, height = 5, width = 7)
+#ggsave("figures/figure_5_old.jpg", plot = figure_5_alternative_old, height = 5, width = 7)
 
 ```
-## Figure 5 Alternative
+
+# Figure 5 Used
 
 ```{r}
 # Scatterplot for correlation vs total international w/o -999
@@ -606,7 +610,7 @@ figure_5
 figure_5_alternative <- ggplot(country_int_count, aes(x = Log_International_Civic, y = Correlation)) + 
   geom_point(aes(color = Country)) +
   #geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
-  labs(y="Correlation", x = "Log International Civic Articles", color = "legend", title = "Figure 4: Total International Articles vs\nNational/International Correlation by Country") +
+  labs(y="Correlation", x = "Log International Civic Articles", color = "legend", title = "Figure 5: Total International Articles vs\nNational/International Correlation by Country") +
   theme_bw() +
   geom_text(data=subset(country_int_count, Country %in% c("Timor Leste", "India", "Turkey", "Kosovo")),
             aes(Log_International_Civic,Correlation,label=Country),
