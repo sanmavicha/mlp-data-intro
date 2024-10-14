@@ -413,6 +413,8 @@ int_share_norm <- ggplot(topic_share_long_stack, aes(x = c(variable))) +
   geom_point(y = topic_share_long_stack$average_cor, color="darkred")
   
 
+int_share_norm
+
 ggsave("figures/int_share_norm.jpg", plot = int_share_norm, height = 5, width = 7)
 ```
 
@@ -473,14 +475,14 @@ event_share_long$variable <- factor(event_share_long$variable,
                                               rowSums(event_share_long[,c("local","international")])
                                               , decreasing = FALSE)]))
 
-figure_4_old <- ggplot(event_share_long, aes(x = c(variable))) + 
-  geom_bar(aes(y = international, group = 1, fill="International"), stat="identity", alpha = 0.5) +
-  geom_bar(aes(y = local, group = 1, fill="National"), stat="identity", alpha = 0.2) +
-  labs(y="Share", x = "", color = "legend", title = "Figure 4: Event Share of Total by \n International and National") + 
-  scale_fill_manual(name = "Source Type:", values = colors) +
-  theme_bw() +
-  theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
-  geom_text(y= topic_share_long$local, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey")
+# figure_4_old <- ggplot(event_share_long, aes(x = c(variable))) + 
+#   geom_bar(aes(y = international, group = 1, fill="International"), stat="identity", alpha = 0.5) +
+#   geom_bar(aes(y = local, group = 1, fill="National"), stat="identity", alpha = 0.2) +
+#   labs(y="Share", x = "", color = "legend", title = "Figure 4: Event Share of Total by \n International and National") + 
+#   scale_fill_manual(name = "Source Type:", values = colors) +
+#   theme_bw() +
+#   theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
+#   geom_text(y= topic_share_long$local, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey")
 
 
 # Create a ggplot for international vs local coverage by topic, ordered by international coverage
@@ -492,73 +494,21 @@ event_share_long$variable <- factor(event_share_long$variable,
                                               , decreasing = FALSE)]))
 
 event_share_total <- ggplot(event_share_long, aes(x = c(variable))) + 
-  geom_bar(aes(y = international, group = 1, fill="International"), stat="identity", alpha = 0.5) +
-  geom_bar(aes(y = local, group = 1, fill="National"), stat="identity", alpha = 0.2) +
-  labs(y="Frequency", x = "", color = "legend", title = "Event Share of Total by \n International and National") + 
+  geom_bar(aes(y = international*10000, group = 1, fill="International"), stat="identity", alpha = 0.5) +
+  geom_bar(aes(y = local*10000, group = 1, fill="National"), stat="identity", alpha = 0.2) +
+  labs(y="Articles per 10,000", x = "", color = "legend", title = "Event Share of Total by \n International and National") + 
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
-  geom_text(y= topic_share_long$local, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey")
+  geom_text(y= topic_share_long$local*10000, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey")
+
+event_share_total
 
 ggsave("figures/event_share_total.jpg", plot = event_share_total, height = 5, width = 7)
 ```
 
 
-# Old Figure 5 - Correlation vs Share International by Country
 
-```{r}
-# Scatterplot for correlation vs share international
-
-# Country Correlation
-average_cor_country <- rowMeans(cor_matrix[,2:21])
-
-# Data for share of international by country
-
-country_share <- counts_combined_clean %>%
-  select(! c(date)) %>%
-  group_by(country,non_local) %>%
-  summarise(across(everything(), sum),
-            .groups = 'drop') %>%
-  select(country,non_local,total_articles) %>%
-  as.data.frame()
-
-for(i in unique(country_share$country)){
-  a <- sum(country_share[which(country_share$country==i),"total_articles"])
-  country_share[which(country_share$country==i & country_share$non_local == 0),"total_articles"] <- country_share[which(country_share$country==i & country_share$non_local == 0),"total_articles"]/a
-  country_share[which(country_share$country==i & country_share$non_local == 1),"total_articles"] <- country_share[which(country_share$country==i & country_share$non_local == 1),"total_articles"]/a
-}
-
-country_share_wide <- country_share %>%
-  pivot_wider(id_cols = country, names_from = non_local, values_from = total_articles)
-
-country_share_wide <- as.data.frame(cbind(country_share_wide,average_cor_country))
-colnames(country_share_wide) <- c("Country","National","International","Correlation")
-
-country_share_wide <- country_share_wide %>%
-  mutate_at(c("National","International","Correlation"),as.numeric)
-
-figure_5_old <- ggplot(country_share_wide, aes(x = International, y = Correlation)) + 
-  geom_point(aes(color = Country)) +
-  geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
-  labs(y="Correlation", x = "Share International", color = "legend", title = "Figure 5: Share International vs\nNational/International Correlation") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-figure_5_old
-
-figure_5_alternative_old <- ggplot(country_share_wide, aes(x = International, y = Correlation)) + 
-  geom_point(aes(color = Country)) +
-  #geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
-  labs(y="Correlation", x = "Share International", color = "legend", title = "Figure 4: Share International vs\nNational/International Correlation") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-figure_5_alternative_old
-
-
-#ggsave("figures/figure_5_old.jpg", plot = figure_5_alternative_old, height = 5, width = 7)
-
-```
 
 # New Correlation b/w Int and Nat by Country
 
@@ -619,6 +569,62 @@ ggsave("figures/int_nat_corr_by_country.jpg", plot = int_nat_corr_by_country, he
 
 ```
 
+
+# Old Figure 5 - Correlation vs Share International by Country
+
+```{r}
+# # Scatterplot for correlation vs share international
+# 
+# # Country Correlation
+# average_cor_country <- rowMeans(cor_matrix[,2:21])
+# 
+# # Data for share of international by country
+# 
+# country_share <- counts_combined_clean %>%
+#   select(! c(date)) %>%
+#   group_by(country,non_local) %>%
+#   summarise(across(everything(), sum),
+#             .groups = 'drop') %>%
+#   select(country,non_local,total_articles) %>%
+#   as.data.frame()
+# 
+# for(i in unique(country_share$country)){
+#   a <- sum(country_share[which(country_share$country==i),"total_articles"])
+#   country_share[which(country_share$country==i & country_share$non_local == 0),"total_articles"] <- country_share[which(country_share$country==i & country_share$non_local == 0),"total_articles"]/a
+#   country_share[which(country_share$country==i & country_share$non_local == 1),"total_articles"] <- country_share[which(country_share$country==i & country_share$non_local == 1),"total_articles"]/a
+# }
+# 
+# country_share_wide <- country_share %>%
+#   pivot_wider(id_cols = country, names_from = non_local, values_from = total_articles)
+# 
+# country_share_wide <- as.data.frame(cbind(country_share_wide,average_cor_country))
+# colnames(country_share_wide) <- c("Country","National","International","Correlation")
+# 
+# country_share_wide <- country_share_wide %>%
+#   mutate_at(c("National","International","Correlation"),as.numeric)
+# 
+# figure_5_old <- ggplot(country_share_wide, aes(x = International, y = Correlation)) + 
+#   geom_point(aes(color = Country)) +
+#   geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
+#   labs(y="Correlation", x = "Share International", color = "legend", title = "Figure 5: Share International vs\nNational/International Correlation") +
+#   theme_bw() +
+#   theme(legend.position = "none")
+# 
+# figure_5_old
+# 
+# figure_5_alternative_old <- ggplot(country_share_wide, aes(x = International, y = Correlation)) + 
+#   geom_point(aes(color = Country)) +
+#   #geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
+#   labs(y="Correlation", x = "Share International", color = "legend", title = "Figure 4: Share International vs\nNational/International Correlation") +
+#   theme_bw() +
+#   theme(legend.position = "none")
+# 
+# figure_5_alternative_old
+# 
+# 
+# #ggsave("figures/figure_5_old.jpg", plot = figure_5_alternative_old, height = 5, width = 7)
+
+```
 
 # Old Figure 4 - Press Freedom
 
