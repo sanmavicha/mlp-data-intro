@@ -178,8 +178,9 @@ ghana_spike <- counts_combined_clean %>%
 
 true_false_spike_a <- ggplot(ghana_spike, aes(x = date, y = true_article_total)) +
   geom_line(stat = "identity", color = "blue") +
-  labs(x = "Date", y = "Article Totals", title = "Figure 2a: Ghana - True Spike") +
-  theme_bw()
+  labs(x = "Date", y = "Article Totals", title = "Ghana - A True Spike") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = .5))
 
 ```
 
@@ -193,8 +194,9 @@ zambia_old$date <- date(zambia_old$date)
 
 true_false_spike_b <- ggplot(zambia_old, aes(x = date, y = total)) +
   geom_line(stat = "identity", color = "red") +
-  labs(x = "Date", y = "Article Totals", title = "Figure 2b: Zambia - False Spike") +
-  theme_bw()
+  labs(x = "Date", y = "Article Totals", title = "Zambia - A False Spike") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = .5))
 
 ```
 
@@ -235,23 +237,26 @@ indonesia$international[which(indonesia$international == 0 & indonesia$regional 
 indonesia_corruption <- ggplot(indonesia, aes(x = date, y = corruption*10000, group = international, color = international)) +
   scale_color_manual(name = "Source Type:", values = c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")) +
   geom_line(stat = "identity") +
-  labs(title= "Corruption", y="Articles per 10,000", x = "", color = "legend") + 
+  labs(title= "Corruption Reporting", y="Articles per 10,000", x = "", color = "legend") + 
   theme_bw() + 
-  theme(legend.position="none")
+  theme(legend.position="none") +
+  theme(plot.title = element_text(hjust = .5))
 
 indonesia_arrest <- ggplot(indonesia, aes(x = date, y = arrest*10000, group = international, color = international)) +
   scale_color_manual(name = "Source Type:", values = c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")) +
   geom_line(stat = "identity") +
-  labs(title= "Arrest", y="", x = "", color = "legend") + 
+  labs(title= "Arrest Reporting", y="", x = "", color = "legend") + 
   theme(axis.text.x = element_text(size=10, angle=40), legend.title = element_text(size=10)) +
-  theme_bw()
+  theme_bw() +
+  theme(plot.title = element_text(hjust = .5))
 
 indonesia_legalaction <- ggplot(indonesia, aes(x = date, y = legalaction*10000, group = international, color = international)) +
   scale_color_manual(name = "Source Type:", values = c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")) +
   geom_line(stat = "identity") +
-  labs(title= "Legal Action", y="", x = "", color = "legend") + 
+  labs(title= "Legal Action Reporting", y="", x = "", color = "legend") + 
   theme_bw() + 
-  theme(legend.position="none")
+  theme(legend.position="none")  +
+  theme(plot.title = element_text(hjust = .5))
 
 # Extract Legend:
 legend <- get_legend(indonesia_arrest)
@@ -405,12 +410,13 @@ topic_share_long_stack$average_cor_char <- dropLeadingZero(topic_share_long_stac
 
 int_share_norm <- ggplot(topic_share_long_stack, aes(x = c(variable))) + 
   geom_bar(aes(y = value, fill=name), stat="identity", position = "fill", alpha = .5) +
-  labs(y="Share", x = "", color = "legend", title = "International Share of Normalized Articles \n With Correlations") + 
+  labs(y="Share", x = "", color = "legend", title = "International Share of Normalized Articles With Correlations") + 
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
   geom_text(y= topic_share_long_stack$average_cor+.15, aes(label = average_cor_char), vjust = 1, colour = "black") +
-  geom_point(y = topic_share_long_stack$average_cor, color="darkred")
+  geom_point(y = topic_share_long_stack$average_cor, color="darkred") +
+  theme(plot.title = element_text(hjust = .5))
   
 
 int_share_norm
@@ -496,11 +502,12 @@ event_share_long$variable <- factor(event_share_long$variable,
 event_share_total <- ggplot(event_share_long, aes(x = c(variable))) + 
   geom_bar(aes(y = international*10000, group = 1, fill="International"), stat="identity", alpha = 0.5) +
   geom_bar(aes(y = local*10000, group = 1, fill="National"), stat="identity", alpha = 0.2) +
-  labs(y="Articles per 10,000", x = "", color = "legend", title = "Event Share of Total by \n International and National") + 
+  labs(y="Articles per 10,000", x = "", color = "legend", title = "Event Share of Total by International and National") + 
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
-  theme(axis.text.x = element_text(size=10, angle=90), legend.position="bottom", legend.title = element_text(size=10)) +
-  geom_text(y= topic_share_long$local*10000, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey")
+  theme(axis.text.x = element_text(size=10, angle=45), legend.position="bottom", legend.title = element_text(size=10)) +
+  geom_text(y= topic_share_long$local*10000, aes(label = round(average_cor,2)), vjust = 1, colour = "darkgrey") +
+  theme(plot.title = element_text(hjust = .5))
 
 event_share_total
 
@@ -553,7 +560,7 @@ figure_5_old <- ggplot(country_int_count, aes(x = Log_International_Civic, y = C
 int_nat_corr_by_country <- ggplot(country_int_count, aes(x = Log_International_Civic, y = Correlation)) + 
   geom_point(aes(color = Country)) +
   #geom_smooth(se = FALSE, color = "darkgrey", alpha = .5) +
-  labs(y="Correlation", x = "Log International Civic Articles", color = "legend", title = "Total International Articles vs\nNational/International Correlation by Country") +
+  labs(y="Correlation", x = "Log International Civic Articles", color = "legend", title = "Total International Articles vsNational/International Correlation by Country") +
   theme_bw() +
   geom_text(data=subset(country_int_count, Country %in% c("Timor Leste", "India", "Turkey", "Kosovo")),
             aes(Log_International_Civic,Correlation,label=Country),
