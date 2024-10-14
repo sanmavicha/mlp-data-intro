@@ -242,14 +242,14 @@ indonesia_corruption <- ggplot(indonesia, aes(x = date, y = corruption*10000, gr
 indonesia_arrest <- ggplot(indonesia, aes(x = date, y = arrest*10000, group = international, color = international)) +
   scale_color_manual(name = "Source Type:", values = c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")) +
   geom_line(stat = "identity") +
-  labs(title= "Arrest", y="Articles per 10,000", x = "", color = "legend") + 
+  labs(title= "Arrest", y="", x = "", color = "legend") + 
   theme(axis.text.x = element_text(size=10, angle=40), legend.title = element_text(size=10)) +
   theme_bw()
 
 indonesia_legalaction <- ggplot(indonesia, aes(x = date, y = legalaction*10000, group = international, color = international)) +
   scale_color_manual(name = "Source Type:", values = c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")) +
   geom_line(stat = "identity") +
-  labs(title= "Legal Action", y="Articles per 10,000", x = "", color = "legend") + 
+  labs(title= "Legal Action", y="", x = "", color = "legend") + 
   theme_bw() + 
   theme(legend.position="none")
 
