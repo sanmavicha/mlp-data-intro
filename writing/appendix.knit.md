@@ -19,313 +19,539 @@ header-includes:
 
 {{< pagebreak >}}
 
-```{r}
-#| label: load-packages
-#| include: false
 
-library(tidyverse)
-library(gt)
-library(kableExtra)
-library(ggplot2)
-library(changepoint)
-library(cowplot)
-library(ml4p.forecast)
-library(here)
 
-```
+
+
 
 # Appendix A: Data in HQMARC
 
 ## Section 1: Distribution of Domestic Sources in HQMARC
 
-```{r}
-#| echo: false
-#| warning: false
-#| label: source-distribution
-#| fig-cap: "The number of domestic media outlets included in the HQMARC corpus by country."
 
-library(ISOcodes)
 
-civic = readr::read_csv(here::here("data", "counts", "full-data.csv"))
+::: {.cell}
+::: {.cell-output-display}
+![The number of domestic media outlets included in the HQMARC corpus by country.](appendix_files/figure-pdf/source-distribution-1.pdf)
+:::
+:::
 
-# Initialize an empty dataframe to store the results
-result_df <- data.frame(country = character(), lsources_len = integer(), stringsAsFactors = FALSE)
 
-sum_lengths <- 0
-for (i in unique(civic$country)) {
-  lsources_len = ml4p.forecast::local_source_select(i)$lsources
-  len = length(lsources_len)
-  
-  # Append the country and the length to the dataframe
-  result_df <- rbind(result_df, data.frame(country = i, lsources_len = len))
-  
-  # Update sum_lengths
-  sum_lengths <- sum_lengths + len
-}
-
-# Create a bar plot to visualize the length of lsources by country
-a = ggplot(result_df, aes(x = reorder(country, -lsources_len), y = lsources_len)) +
-  geom_bar(stat = "identity", fill = "darkgrey") +
-  labs(title = "Number of Domestic Sources by Country", 
-       x = NULL, 
-       y = NULL) +
-  theme_bw() +
-  scale_y_continuous(breaks = 0:max(result_df$lsources_len)) +  # Set the y-axis to display numbers from 0 to 5
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
-        title = element_text(size = 10))
-
-a
-
-```
 
 ## Section 2: Languages in HQMARC
 
-```{r}
-#| echo: false
-#| warning: false
 
-library(ISOcodes)
 
-lan = read_csv(here::here("languages", "Scraping Process List.csv")) %>%
-  filter(! Name %in% c("Roya’s project")) %>%
-  filter(!is.na(Language))
+::: {.cell}
 
-# Remove parentheses and all characters between them
-lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
+:::
 
-# Trim any leading or trailing spaces left after removing the parentheses
-lan$Language <- trimws(lan$Language)
 
-# Calculate number of languages
-langs = unique(unlist(strsplit(lan$Language, ", ")))
 
-nl = length(langs)
+The *HQMARC* corpus currently includes domestic media outlets publishing in 36 languages. This number will increase as we add new countries and media sources to the corpus. These languages include Afrikaans, Albanian, Amharic, Arabic, Armenian, Azerbaijani, Belarusian, Bengali, Chinese, English, French, Georgian, Hindi, Hungarian, Indonesian, Kazakh, Central Khmer, Kinyarwanda, Kongo, Macedonian, Malay, Nepali, Portuguese, Romanian; Moldavian; Moldovan, Russian, Sinhala; Sinhalese, Spanish; Castilian, Serbian, Swahili, Tagalog, Turkish, Ukrainian, Urdu, Uzbek, Zulu. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
+
+
+
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 
 ```
+**SLV: El Salvador**: es, en
 
-The *HQMARC* corpus currently includes domestic media outlets publishing in `r nl` languages. This number will increase as we add new countries and media sources to the corpus. These languages include `r unlist(ISO_639_2[ISO_639_2$Alpha_2 %in% langs, ]$Name)`. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
+**LBR: Liberia**: en
 
-```{r}
-#| echo: false
-#| warning: false
+**KEN: Kenya**: en
 
-# Loop over the dataframe and print each country with its languages
-for(i in 1:nrow(lan)) {
-  cat("**", lan$Name[i], "**: ", lan$Language[i], "\n\n", sep = "")
-}
+**HND: Honduras**: es, en
 
+**KGZ: Kyrgyzstan**: en, ru, kg
+
+**SEN: Senegal**: fr
+
+**UZB: Uzbekistan**: en, ru, uz
+
+**UKR: Ukraine**: uk, ru, en
+
+**ZMB: Zambia**: en
+
+**NPL: Nepal**: ne, en
+
+**CMR: Cameroon**: fr
+
+**AZE: Azerbaijan**: en, az, ru
+
+**PAK: Pakistan**: ur, en
+
+**GEO: Georgia**: ka, en
+
+**TLS: Timor Leste**: tet, pt
+
+**TUR: Turkey**: tr
+
+**ARM: ArmeniaA**: hy, ru
+
+**AGO: Angola**: pt
+
+**BEN: Benin**: fr
+
+**BFA: Burkina Faso**: fr
+
+**NER: Niger**: fr
+
+**ETH: Ethiopia**: en, am
+
+**LKA: Sri Lanka**: en, si
+
+**BLR: Belarus**: be, ru
+
+**MRT: Mauritania**: fr, ar
+
+**TZA: Tanzania**: en, sw
+
+**UGA: Uganda**: en
+
+**PRY: Paraguay**: es
+
+**MOZ: Mozambique**: pt, en
+
+**SSD: South Sudan**: en, ar
+
+**ZWE: Zimbabwe**: en
+
+**RWA: Rwanda**: en, fr, rw
+
+**NGA: Nigeria**: en
+
+**GHA: Ghana**: en
+
+**COD: Congo**: fr
+
+**MAR: Morocco**: ar, fr
+
+**TUN: Tunisia**: fr, ar
+
+**MLI: Mali**: fr
+
+**GTM: Guatemala**: es
+
+**XKX: Kosovo**: sq
+
+**KHM: Cambodia**: km, en
+
+**MKD: Macedonia**: sq, en, mk
+
+**KAZ: Kazakhstan**: kk, ru, en
+
+**SRB: Serbia**: sr
+
+**MYS: Malaysia**: en, ms, zh
+
+**PHL: Philippines**: en, tl
+
+**IND: India**: en, hi
+
+**MDA: Moldova**: ro, ru, en
+
+**BGD: Bangladesh**: bn
+
+**ALB: Albania**: sq, en
+
+**ZAF: South Africa**: af, en, zu
+
+**DZA: Algeria**: fr, ar
+
+**ECU: Ecuador**: es
+
+**NIC: Nicaragua**: es
+
+**COL: Colombia**: es
+
+**NAM: Namibia**: en
+
+**IDN: Indonesia**: en, id
+
+**SLB: Solomon Islands**: en
+
+**HUN: Hungary**: hu
+
+**JAM: Jamaica**: en
+
+**PER: Peru**: es
+
+**DOM: Dominican Republic**: es
+
+**MWI: Malawi**: en
 ```
+
+
+:::
+:::
+
+
 
 ## Section 3: Digital News Sources
 
-```{r, echo=FALSE}
-library(knitr)
-library(ml4p.forecast)
-opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
-#isources
-cat("  -  International Sources:")
 
-counter <- 0  # Initialize counter
-for (country in isources) {
-    country <- sub("\\.csv$", "", country)
-    cat(paste0(country, ", "))
-    counter <- counter + 1
-    if (counter %% 6 == 0) {  # Check if counter is divisible by 5
-        cat("\n")  # Print newline after every 5 countries
-    }
-}
+
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
+
 ```
+  -  International Sources:
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+aljazeera.com, bbc.com, csmonitor.com, france24.com, nytimes.com, reuters.com, 
+scmp.com, theguardian.com, themoscowtimes.com, washingtonpost.com, wsj.com, lemonde.fr, 
+liberation.fr, elpais.com, lefigaro.fr, xinhuanet.com, 
+```
+
+
+:::
+:::
+
+
 
 **Sub-Saharan Africa**:
 
-```{r, echo=FALSE}
-countries_afr <- c("Angola", "Benin", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Mali", "Malawi", "Mauritania", "Mozambique", "Niger", "Nigeria", "Rwanda", "Senegal", "South Africa", "Tanzania", "Uganda", "Zambia", "Zimbabwe")
 
-cat("  -   Africa Regional Sources:", "\n")
-cat("africanews.com", "theeastafrican.co.ke", "iwpr.net\n\n")
 
-# Loop through countries
-for (country in countries_afr) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  sources = local_source_select(country)$lsources
-  sources = gsub("\\.csv$", "", sources)
-  
-  # Determine the number of columns based on the country
-  num_columns <- ifelse(country == "Liberia", 3, 5)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    counter <- counter + 1
-    cat(paste0( source))
-    
-    # Check if the counter reaches the specified number of columns
-    if (counter %% num_columns == 0) {
-      cat("\n")
-    } else {
-      cat(", ")
-    }
-  }
-  
-  cat("\n\n")
-}
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 
 ```
+  -   Africa Regional Sources: 
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+africanews.com theeastafrican.co.ke iwpr.net
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+  -  Angola:
+opais.co.ao, jornalf8.net, angola24horas.com, portaldeangola.com, angola-online.net
+vozdeangola.com, jornaldeangola.ao, 
+
+  -  Benin:
+lanouvelletribune.info, news.acotonou.com, lematinal.media, levenementprecis.com, 
+
+  -  Cameroon:
+journalducameroun.com, camerounweb.com, 237actu.com, 237online.com, cameroonvoice.com
+lebledparle.com, thesunnewspaper.cm, 
+
+  -  DR Congo:
+radiookapi.net, lesoftonline.net, acpcongo.com, lephareonline.net, groupelavenir.org
+matininfos.net, cas-info.ca, actualite.cd, 7sur7.cd, 
+
+  -  Ethiopia:
+addisfortune.news, addisstandard.com, capitalethiopia.com, thereporterethiopia.com, ethiopianmonitor.com
+addisadmassnews.com, 
+
+  -  Ghana:
+dailyguidenetwork.com, ghanaweb.com, graphic.com.gh, newsghana.com.gh, 
+
+  -  Kenya:
+kbc.co.ke, citizen.digital, nation.africa, theeastafrican.co.ke, 
+
+  -  Liberia:
+thenewdawnliberia.com, liberianobserver.com, analystliberiaonline.com
+frontpageafricaonline.com, inquirernewspaper.com, thenewsnewspaper.online
+
+
+  -  Mali:
+maliweb.net, malijet.com, news.abamako.com, 
+
+  -  Malawi:
+mwnation.com, nyasatimes.com, times.mw, faceofmalawi.com, malawivoice.com
+
+
+  -  Mauritania:
+alwiam.info, lecalame.info, journaltahalil.com, alakhbar.info, saharamedias.net
+
+
+  -  Mozambique:
+correiodabeiraserra.com, canal.co.mz, mmo.co.mz, cartamz.com, verdade.co.mz
+clubofmozambique.com, portalmoznews.com, jornaldomingo.co.mz, tvm.co.mz, 
+
+  -  Niger:
+actuniger.com, nigerinter.com, lesahel.org, tamtaminfo.com, airinfoagadez.com
+nigerexpress.info, journalduniger.com, 
+
+  -  Nigeria:
+guardian.ng, thenewsnigeria.com.ng, vanguardngr.com, thenationonlineng.net, 
+
+  -  Rwanda:
+newtimes.co.rw, therwandan.com, kigalitoday.com, umuseke.rw, 
+
+  -  Senegal:
+xalimasn.com, lesoleil.sn, enqueteplus.com, lasnews.sn, ferloo.com
+nouvelobs.com, sudquotidien.sn, 
+
+  -  South Africa:
+timeslive.co.za, news24.com, dailysun.co.za, sowetanlive.co.za, isolezwe.co.za
+iol.co.za, son.co.za, 
+
+  -  Tanzania:
+ippmedia.com, dailynews.co.tz, habarileo.co.tz, thecitizen.co.tz, mtanzania.co.tz
+jamhurimedia.co.tz, mzalendo.co.tz, 
+
+  -  Uganda:
+monitor.co.ug, observer.ug, newvision.co.ug, nilepost.co.ug, sunrise.ug
+eagle.co.ug, 
+
+  -  Zambia:
+lusakatimes.com, mwebantu.com, diggers.news, openzambia.com, lusakavoice.com
+dailynationzambia.com, zambianewsnetwork.com, zambianobserver.com, 
+
+  -  Zimbabwe:
+thestandard.co.zw, theindependent.co.zw, herald.co.zw, chronicle.co.zw, newsday.co.zw
+thezimbabwean.co, zimbabwesituation.com, newzimbabwevision.com, zimlive.com, 
+```
+
+
+:::
+:::
+
+
 
 **Middle East and North Africa**
 
-```{r, echo=FALSE}
-# Define the MENA countries
-countries_mena <- c("Morocco", "Tunisia", "Turkey")
 
-# Loop through MENA countries
-for (country in countries_mena) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  # Print the sources with bullet points
-  for (i in seq_along(sources)) {
-    cat(paste0( sources[i]))
-    
-    # Check if it's not the last source for the country
-    if (i < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 3 sources
-      if (i %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
+
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
+
 ```
+  -  Morocco:
+leconomiste.com, lematin.ma, assabah.ma
+
+  -  Tunisia:
+assarih.com, babnet.net, jomhouria.com, lapresse.tn
+
+  -  Turkey:
+diken.com.tr, t24.com.tr, sozcu.com.tr, posta.com.tr, sabah.com.tr
+```
+
+
+:::
+:::
+
+
 
 **Eastern Europe**
 
-```{r, echo=FALSE}
-# Define the Eastern European regional sources
-cat("  -   Eastern Europe Regional Sources:\n")
-cat("euronews.com/tag/eastern-europe", "neweasterneurope.edu", "balkaninsight.com", "iwpr.net\n\n")
 
-# Define the Eastern European countries
-countries_est_eu <- c("Albania", "Armenia", "Azerbaijan", "Belarus", "Georgia", "Hungary", "Macedonia", "Moldova", "Kosovo", "Ukraine", "Serbia")
 
-# Loop through Eastern European countries
-for (country in countries_est_eu) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  # Print the sources with bullet points
-  for (i in seq_along(sources)) {
-    cat(paste0(sources[i]))
-    
-    # Check if it's not the last source for the country
-    if (i < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 3 sources
-      if (i %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 
 ```
+  -   Eastern Europe Regional Sources:
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+euronews.com/tag/eastern-europe neweasterneurope.edu balkaninsight.com iwpr.net
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+  -  Albania:
+gazetatema.net, panorama.com.al, telegraf.al
+
+  -  Armenia:
+azatutyun.am, aravot.am, 168.am, 1in.am, golosarmenii.am
+
+  -  Azerbaijan:
+azeritimes.com, azadliq.info, abzas.org, turan.az, zerkalo.az, 
+mikroskopmedia.com, xalqcebhesi.az, musavat.com, ru.echo.az
+
+  -  Belarus:
+nashaniva.by, novychas.by, nv-online.info, belgazeta.by, zviazda.by, 
+sb.by
+
+  -  Georgia:
+ambebi.ge, georgiatoday.ge
+
+  -  Hungary:
+index.hu, 24.hu, 168.hu, hvg.hu, demokrata.hu
+
+  -  Macedonia:
+koha.mk, slobodenpecat.mk, makfax.com.mk, skopjediem.com, novamakedonija.com.mk
+
+  -  Moldova:
+timpul.md, tribuna.md, unimedia.info, voceabasarabiei.md, publika.md, 
+ipn.md, zdg.md
+
+  -  Kosovo:
+kosova-sot.info, balkaninsight.com, prishtinainsight.com, botasot.info
+
+  -  Ukraine:
+delo.ua, interfax.com.ua, kp.ua, pravda.com.ua, kyivpost.com, 
+kyivindependent.com
+
+  -  Serbia:
+rs.n1info.com, juznevesti.com, insajder.net, danas.rs, balkaninsight.com
+```
+
+
+:::
+:::
+
+
 
 **Latin America and the Caribbean**:
 
-```{r, echo=FALSE}
-# Define the Latin America regional sources
-cat("  -   Latin America Regional Sources:\n")
-cat("elpais.com", "cnnespanol.cnn.com", "iwpr.net\n\n")
 
-# Define the Latin American countries
-countries_lacar <- c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru")
 
-# Loop through Latin American countries
-for (country in countries_lacar) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    cat(paste0(source))
-    counter <- counter + 1
-    
-    # Check if it's not the last source for the country
-    if (counter < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 5 sources
-      if (counter %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 
 ```
+  -   Latin America Regional Sources:
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+elpais.com cnnespanol.cnn.com iwpr.net
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+  -  Colombia:
+elcolombiano.com, elespectador.com, elheraldo.co, eltiempo.com
+
+  -  Ecuador:
+elcomercio.com, eldiario.ec, elnorte.ec, eluniverso.com, metroecuador.com.ec
+
+  -  El Salvador:
+laprensagrafica.com, elfaro.net, elsalvador.com, diario.elmundo.sv, diarioelsalvador.com, 
+revistafactum.com, gatoencerrado.news
+
+  -  Guatemala:
+prensalibre.com, republica.gt, lahora.gt, soy502.com
+
+  -  Honduras:
+elheraldo.hn, laprensa.hn, proceso.hn, tiempo.hn
+
+  -  Jamaica:
+jamaica-gleaner.com, jamaicaobserver.com
+
+  -  Nicaragua:
+confidencial.com.ni, laprensani.com, nuevaya.com.ni, articulo66.com, laverdadnica.com, 
+ondalocalni.com, canal2tv.com, lajornadanet.com
+
+  -  Paraguay:
+abc.com.py, lanacion.com.py, ultimahora.com
+
+  -  Peru:
+elcomercio.pe, gestion.pe, larepublica.pe, ojo-publico.com, idl-reporteros.pe
+```
+
+
+:::
+:::
+
+
 
 **Asia**:
 
-```{r, echo=FALSE}
-# Define the Asia regional sources
-cat("  -   Asia Regional Sources:\n")
-cat("asiatimes.com", "asia.nikkei.com", "iwpr.net\n\n")
 
-# Define the Asian countries
-countries_asia <- c("Bangladesh", "Cambodia", "Indonesia", "India", "Kazakhstan", "Kyrgyzstan", "Malaysia", "Philippines", "Sri Lanka", "Uzbekistan")
 
-# Loop through Asian countries
-for (country in countries_asia) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    cat(paste0(source))
-    counter <- counter + 1
-    
-    # Check if it's not the last source for the country
-    if (counter < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 5 sources
-      if (counter %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 
 ```
+  -   Asia Regional Sources:
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+asiatimes.com asia.nikkei.com iwpr.net
+```
+
+
+:::
+
+::: {.cell-output .cell-output-stdout}
+
+```
+  -  Bangladesh:
+prothomalo.com, bd-pratidin.com, kalerkantho.com, jugantor.com, dailyjanakantha.com
+
+  -  Cambodia:
+kohsantepheapdaily.com.kh, moneaksekar.com, phnompenhpost.com, cambodiadaily.com
+
+  -  Indonesia:
+thejakartapost.com, jawapos.com, kompas.com, mediaindonesia.com, sindonews.com, 
+beritasatu.com, hariansib.com
+
+  -  India:
+amarujala.com, indianexpress.com, thehindu.com, hindustantimes.com, deccanherald.com, 
+firstpost.com, indiatimes.com, timesofindia.indiatimes.com
+
+  -  Kazakhstan:
+caravan.kz, diapazon.kz, kaztag.kz, rus.azattyq.org
+
+  -  Kyrgyzstan:
+akipress.com, 24.kg, kloop.kg, super.kg, vb.kg, 
+kaktus.kg, kaktus.media
+
+  -  Malaysia:
+malaymail.com, nst.com.my, thestar.com.my, utusan.com.my, thesun.my, 
+malaysiakini.com
+
+  -  Philippines:
+mb.com.ph, manilastandard.net, inquirer.net, manilatimes.net
+
+  -  Sri Lanka:
+dailymirror.lk, island.lk, divaina.lk, adaderana.lk, lankadeepa.lk
+
+  -  Uzbekistan:
+fergana.ru, kun.uz, gazeta.uz, podrobno.uz, batafsil.uz, 
+sof.uz, anhor.uz, asiaterra.info, daryo.uz
+```
+
+
+:::
+:::
+
+
 
 ## Section 4: Assessing Outlet Independence
 
@@ -527,3 +753,4 @@ This document lists the categories where keywords are currently being deployed a
     -   For purge: resign*; fire*; dismiss; sack; replace; quit.
 -   Purpose of Keywords
     -   The purpose of these keywords is to assign a second event category to those articles in corruption that also feature arrests, legal action, and purges. Articles in those categories that feature these words are double counted as both corruption and the original category.
+
