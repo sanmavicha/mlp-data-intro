@@ -53,7 +53,7 @@ today_folder = paste0(here(),"/data/counts")
 
 
 ## Grab data from newly created folder. I don't think this will create any problems
-new_files <- dir(paste0(path_git("ML for Peace/ml4p.forecasting/2-model-data/no_te")) , full.names = TRUE)
+new_files <- dir(paste0(path_git("ML for Peace/ml4p.forecasting/1-normalized-counts")) , full.names = TRUE)
 file.copy(from = new_files, to = today_folder, overwrite = TRUE)
 
 
