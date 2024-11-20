@@ -1,0 +1,378 @@
+---
+title: "Geoparsing_performance"
+output: html_document
+date: "2024-11-04"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(knitr)
+library(tidyr)
+```
+
+```{r Data Loading}
+# Loading data
+geo_data <- read_xlsx("Geoparsing_GPT_CLIFF.xlsx")
+
+```
+  
+# Article Sample : 
+
+A total of **250 articles** randomly picked from all articles from Colombia for 2012-01 were analyzed to evaluate the geographic data extraction performance of CLIFF and GPT.
+
+# Variable explanation : 
+
+## Mentioned Locations in Text :
+
+The variable  **location_mentioned** is a humanly coded variable, coded by identifying the lowest level mentioned in the text among these 3 levels (Country, adm1, adm2 )
+
+If the location mentioned is **lower** than these 3 levels, the variables take the values : 
+
+  - No Location : if no location is mentioned in the main text/title
+  - Other : if other lower level locations are mentioned (district, neighborhood, village)
+  - Multiple locations : in the cases where the text mentions multiple different locations (especially true for sports or political events articles)
+  
+Of the 250 articles, **89** do not have an explicit mention of a location. 
+- **161** articles mention a location : 
+- **56** explicitly mention a country 
+- **28** explicitly mention an admin1 level location 
+- **50** explicitly mention an admin2 level location 
+- **11** mention multiple locations 
+- **15** mention an ‘’other” location these are : City (2), Landmark (6), Neighbourhood (5), Village (2) 
+
+```{r explicit locations }
+# Count of articles with and without explicit locations
+article_summary <- geo_data %>%
+  group_by(location_mentioned) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(article_summary, caption = "Summary of Articles by Location Mentioned")
+```
+
+
+## Binary Variables : Cliff_"level"_identified, GPT_"level"_identified 
+
+The variables **Cliff_country_identifier** **Cliff_adm1_identified?** **Cliff_adm2_identified?** take the value 1 if Cliff returned  location at that level 
+
+```{r}
+table (geo_data$Cliff_country_identifier)
+table(geo_data$`Cliff_adm1_identified?`)
+table(geo_data$`Cliff_adm2_identified?`)
+
+```
+
+Similarly the variables **GPT_adm1_identified?** **GPT_adm2_identified?** **GPT_country_identified?** take the value 1 if GPT returned a location at that level 
+
+```{r}
+table(geo_data$GPT_country_identifier)
+table(geo_data$`GPT_adm1_identified?`)
+table(geo_data$`gpt_adm2_identified?`)
+```
+## Accuracy variables : "level"_status 
+
+These variables are also human coded. For coding this, I refer to the main translated text and title to identify if the location identified by cliff and gpt are correct on all levels. The variables take the following values : 
+
+- **Correct** : if the location returned is correct on the level. 
+- **Correct (Inferred of implicit)** : if the text does not mention a location explicitly (belonging to the 3 admin levels), and a correct location is returned. 
+- **Not identified** : if no location was returned on the level 
+- **Wrong (Ambiguity of Names)** :	Confusion between similarly named countries or regions, or admin1/admin2 with similar names across countries.
+- **Wrong (Hierarchical Misclassification)** : 	Incorrectly linking admin1 or admin2 levels to the wrong country or higher-level admin regions.
+- **Wrong (Disambiguation from Context)** :	Incorrect country or admin assignment when context does not clarify specific locations.
+- **Wrong (Multiple Locations	Errors)** :  from text mentioning multiple regions or grouping locations together.
+- **Wrong (Inferred or Implicit Locations)** :	Locations inferred from context without explicit mention, leading to misclassification.
+
+# Performance : Cliff vs GPT
+
+## CLIFF Country Status Analysis
+
+This section provides an analysis of the values of `cliff_country_status` under three conditions:
+1. **General**: The overall distribution of `cliff_country_status`.
+2. **Where Any Location is Mentioned**: Articles where `location_mentioned` is different from "No Location". Any location mentioned in the text (including multiple locations, and lower level locations)
+3. **Where Location Mentioned is Country**: Articles where `location_mentioned` is explicitly "country."
+
+### CLIFF Country Status: General
+
+The table below shows the general distribution of `cliff_country_status` across all 249 articles.
+
+```{r cliff-country-general}
+# CLIFF Country Status (General)
+cliff_country_general <- geo_data %>%
+  group_by(cliff_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_country_general, caption = "CLIFF Country Status: General")
+
+```
+
+### CLIFF Country Status : (Where Any Location is Mentioned)
+
+The table below displays the distribution of cliff_country_status for articles where **any** location is mentioned in the text 
+
+```{r}
+cliff_country_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(cliff_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_country_location, caption = "CLIFF Country Status: Where Any Location is Mentioned")
+
+```
+
+### CLIFF Country Status: Where Location Mentioned is Country
+
+The table below shows the distribution of cliff_country_status for articles where location_mentioned is explicitly "country."
+
+```{r}
+# CLIFF Country Status (Where Location Mentioned is Country)
+cliff_country_specific <- geo_data %>%
+  filter(location_mentioned == "Country") %>%
+  group_by(cliff_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_country_specific, caption = "CLIFF Country Status: Where Location Mentioned is Country")
+
+```
+
+## Cliff Admin 1 Status 
+
+This section analyzes the values of `cliff_admin1_status` for three conditions:
+1. **General**: The overall distribution of `cliff_admin1_status`.
+2. **Where Any Location is Mentioned**: Articles where `location_mentioned` is any, i.e. different from "not identified."
+3. **Where Location Mentioned is Admin1**: Articles where `location_mentioned` is explicitly "admin1."
+
+### Cliff Admin1 Status : General 
+
+The table below summarizes the correctness of locations returned by Cliff for Admin1 level location, for the overall 250 articles :
+- ** Not Identified : No country** refers to articles where the country was not identified. Generally, an upper level is not identified, the lower levels will also not be identified
+
+```{r cliff-admin1-general}
+cliff_admin1_general <- geo_data %>%
+  group_by(Cliff_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin1_general, caption = "CLIFF Admin1 Status: General")
+
+```
+
+### CLIFF Admin1 Status: Where Any Location is Mentioned
+
+The table below displays the distribution of cliff_admin1_status for articles where location_mentioned is different from "No Location" i.E articles with any location mentionned in the text :
+
+```{r Cliff_admin1_any}
+cliff_admin1_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(Cliff_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin1_location, caption = "CLIFF Admin1 Status: Where Any Location is Mentioned")
+```
+### CLIFF Admin1 Status: Where Location Mentioned is Admin1
+
+The table below shows the distribution of cliff_admin1_status for articles where location_mentioned is explicitly "admin1."
+
+```{r Cliff_admin1_}
+cliff_admin1_specific <- geo_data %>%
+  filter(location_mentioned == "Admin1") %>%
+  group_by(Cliff_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin1_specific, caption = "CLIFF Admin1 Status: Where Location Mentioned is Admin1")
+```
+
+## Cliff Admin 2 Status : 
+
+###CLIFF Admin2 Status: General
+
+The table below shows the general distribution of cliff_admin2_status across all 249 articles.
+
+```{r Adm2_status_general}
+cliff_admin2_general <- geo_data %>%
+  group_by(Cliff_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin2_general, caption = "CLIFF Admin2 Status: General")
+```
+
+###CLIFF Admin2 Status: Where Any Location is Mentioned
+
+The table below displays the distribution of cliff_admin2_status for articles where location_mentioned is different from "No Location"
+
+
+```{r}
+
+cliff_admin2_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(Cliff_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin2_location, caption = "CLIFF Admin2 Status: Where Any Location is Mentioned")
+
+```
+
+### CLIFF Admin2 Status: Where Location Mentioned is Admin2
+
+The table below shows the distribution of cliff_admin2_status for articles where location_mentioned is explicitly "admin2."
+
+```{r}
+
+cliff_admin2_specific <- geo_data %>%
+  filter(location_mentioned == "Admin2") %>%
+  group_by(Cliff_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(cliff_admin2_specific, caption = "CLIFF Admin2 Status: Where Location mentioned is Admin2")
+
+```
+
+## GPT Country status : 
+
+###GPT Country Status: General
+
+The table below shows the general distribution of GPT_country_status across all articles.
+
+```{r}
+gpt_country_general <- geo_data %>%
+  group_by(GPT_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_country_general, caption = "GPT Country Status: General")
+```
+### GPT Country Status: Where Any Location is Mentioned
+
+The table below displays the distribution of GPT_country_status for articles where any location is mentioned in the text (location_mentioned is not "No Location")
+
+```{r}
+gpt_country_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(GPT_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_country_location, caption = "GPT Country Status: Where Any Location is Mentioned")
+```
+###GPT Country Status: Where Location Mentioned is Country
+
+The table below shows the distribution of GPT_country_status for articles where location_mentioned is explicitly "Country."
+
+```{r}
+gpt_country_specific <- geo_data %>%
+  filter(location_mentioned == "Country") %>%
+  group_by(GPT_country_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_country_specific, caption = "GPT Country Status: Where Location Mentioned is Country")
+```
+
+## GPT Admin 1 status : 
+
+### GPT Admin1 Status: General
+The table below summarizes the distribution of GPT_admin1_status across all articles.
+
+```{r}
+gpt_admin1_general <- geo_data %>%
+  group_by(GPT_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin1_general, caption = "GPT Admin1 Status: General")
+```
+### GPT Admin1 Status: Where Any Location is Mentioned
+
+The table below shows the distribution of GPT_admin1_status for articles where any location is mentioned.
+
+```{r}
+gpt_admin1_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(GPT_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin1_location, caption = "GPT Admin1 Status: Where Any Location is Mentioned")
+
+```
+### GPT Admin1 Status: Where Location Mentioned is Admin1
+
+The table below shows the distribution of GPT_admin1_status for articles where location_mentioned is explicitly "Admin1."
+
+```{r}
+gpt_admin1_specific <- geo_data %>%
+  filter(location_mentioned == "Admin1") %>%
+  group_by(GPT_admin1_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin1_specific, caption = "GPT Admin1 Status: Where Location Mentioned is Admin1")
+```
+
+## GPT Admin 2 status : 
+
+### GPT Admin2 Status: General
+The table below summarizes the distribution of GPT_admin2_status across all articles.
+
+```{r}
+gpt_admin2_general <- geo_data %>%
+  group_by(GPT_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin2_general, caption = "GPT Admin2 Status: General")
+```
+
+### GPT Admin2 Status: Where Any Location is Mentioned
+The table below shows the distribution of GPT_admin2_status for articles where any location is mentioned.
+
+```{r}
+gpt_admin2_location <- geo_data %>%
+  filter(location_mentioned != "No Location") %>%
+  group_by(GPT_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin2_location, caption = "GPT Admin2 Status: Where Any Location is Mentioned")
+```
+
+### GPT Admin2 Status: Where Location Mentioned is Admin2
+
+The table below shows the distribution of GPT_admin2_status for articles where location_mentioned is explicitly "Admin2."
+
+```{r}
+gpt_admin2_specific <- geo_data %>%
+  filter(location_mentioned == "Admin2") %>%
+  group_by(GPT_admin2_status) %>%
+  summarise(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+
+kable(gpt_admin2_specific, caption = "GPT Admin2 Status: Where Location Mentioned is Admin2")
+```
+
+# Overall Comparison by Level : 
+
+```{r}
+# CLIFF vs GPT Accuracy Comparison: Filtered by Level
+accuracy_comparison <- geo_data %>%
+  summarise(
+    cliff_country = mean(Cliff_country_identifier[location_mentioned == "Country"], na.rm = TRUE),
+    gpt_country = mean(GPT_country_identifier[location_mentioned == "Country"], na.rm = TRUE),
+    cliff_admin1 = mean(`Cliff_adm1_identified?`[location_mentioned == "Admin1"], na.rm = TRUE),
+    gpt_admin1 = mean(`GPT_adm1_identified?`[location_mentioned == "Admin1"], na.rm = TRUE),
+    cliff_admin2 = mean(`Cliff_adm2_identified?`[location_mentioned == "Admin2"], na.rm = TRUE),
+    gpt_admin2 = mean(`gpt_adm2_identified?`[location_mentioned == "Admin2"], na.rm = TRUE)
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "model_level", values_to = "accuracy")
+
+kable(accuracy_comparison, caption = "CLIFF vs GPT Accuracy Across Levels (Filtered by Level)")
+```
