@@ -1,0 +1,124 @@
+---
+title: "Untitled"
+author: "MVC"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(cowplot)
+library(maps)
+
+# Adding the graph repository
+
+overleaf <- "C:/Users/Mateo Chaparro/Dropbox/Aplicaciones/Overleaf/Presenting MLP Submission/figures"
+```
+
+
+```{r}
+# Loading the data and cleaning the data
+data <- read.csv("C:/Users/Mateo Chaparro/Downloads/full-data.csv")
+vars_to_keep <- c("date", "country", "arrest", "censor", "electionactivity", 
+                     "electionirregularities", "cooperate", "coup", "defamationcase", 
+                     "disaster", "legalaction", "legalchange", "martiallaw", 
+                     "mobilizesecurity", "corruption", "activism", "protest", 
+                     "purge", "raid", "threaten", "violencelethal", 
+                     "violencenonlethal", "article_total", "cs_999", "rai_999")
+
+df_map1 <- data %>% select(all_of(vars_to_keep)) %>% mutate(
+  total_cs = rowSums(across(3:22, ~ .)),
+  country = ifelse(country == "DR Congo", "Democratic Republic of the Congo", country),
+  year = format(as.Date(date, "%Y-%m-%d"), "%Y")) %>% group_by(year, country) %>% summarise(
+    tot_yr_cs = sum(total_cs),
+    tot_yr_art = sum(article_total),
+    p_cs = tot_yr_cs/tot_yr_art)
+
+# Setting map parameters
+map_theme <- theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.title.y = element_blank(), axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        legend.key = element_rect(),
+        legend.key.height = unit(0.5, 'cm'),
+        legend.key.width = unit(0.5, 'cm'),
+        legend.text = element_text(size = 5), legend.title=element_text(size = 6),
+        #legend.position = c(.22, .75), 
+        legend.box.background = element_rect(colour = "black"))
+
+# Calling the map and the limits to mimic the ones for the RAI dataset
+map <- map_data('world')
+map <- map %>% filter(region != "Antarctica") %>%  rename(country = region)
+
+x_lim = c(-90,142)
+y_lim = c(-33, 52)
+
+# Creating an expanded dataset for countries not in our data
+miss_map <- left_join(map, df_map1)
+miss_cty_expanded <- miss_map %>% filter(is.na(year)) %>% distinct(country) %>%
+  tidyr::crossing(year = unique(df_map1$year), tot_yr_cs = NA, tot_yr_art = NA, p_cs=NA)
+
+# Combining the final map data
+complete_data <- bind_rows(df_map1, miss_cty_expanded)
+map1 <- left_join(map, complete_data, by="country")
+
+# Plot the map
+ggplot(map1, aes(x = long, y = lat, group = group, fill = p_cs)) +
+  geom_polygon(color = "white") +
+  scale_fill_gradient(low = "#F1E980", high = "#753202", na.value = "lightgray") +
+  labs(title = "Civic Space Articles per Country (yearly averages)",
+       fill = "Civic Space \nArticles (%)") +
+  coord_map(xlim = x_lim, ylim = y_lim) +
+  theme_bw() + 
+  facet_wrap(~ year) +
+  map_theme
+
+ggsave(paste0(overleaf, "/Map1_p_cs_articles.png"), width = 12, height = 6, units = "in")
+
+```
+
+```{r}
+events <- c("arrest", "censor", "electionactivity", 
+                     "electionirregularities", "cooperate", "coup", "defamationcase", 
+                     "legalaction", "legalchange", "martiallaw", 
+                     "mobilizesecurity", "corruption", "activism", "protest", 
+                     "purge", "raid", "threaten", "violencelethal", 
+                     "violencenonlethal")
+
+df_map2 <- data %>% select(all_of(vars_to_keep)) %>% mutate(
+  total_cs = rowSums(across(3:22, ~ .)),
+  country = ifelse(country == "DR Congo", "Democratic Republic of the Congo", country),
+  year = format(as.Date(date, "%Y-%m-%d"), "%Y")) %>% group_by(country, year) %>% summarise(
+    across(all_of(events), sum, na.rm = TRUE))
+
+df_map2$max_var <- colnames(df_map2[, events])[apply(df_map2[, events], 1, which.max)]
+
+df_map2.2 <- df_map2 %>% select(year, country, max_var)
+
+# Creating an expanded dataset for countries not in our data
+dsmiss2 <- left_join(map, df_map2.2)
+miss_cty_expanded <- dsmiss2 %>% filter(is.na(max_var)) %>% distinct(country) %>%
+  tidyr::crossing(year = unique(df_map1$year), max_var=NA)
+
+# Combining the final map data
+complete_data <- bind_rows(df_map2.2, miss_cty_expanded)
+map2 <- left_join(map, complete_data, by="country")
+
+# Plot the map
+ggplot(map2, aes(x = long, y = lat, group = group, fill = max_var)) +
+  geom_polygon(color = "white") +
+  #scale_fill_gradient(low = "#F1E980", high = "#753202", na.value = "lightgray") +
+  labs(title = "Most Common Civic Space Event per country",
+       fill = "Event \nType") +
+  coord_map(xlim = x_lim, ylim = y_lim) +
+  theme_bw() + 
+  facet_wrap(~ year) +
+  map_theme
+
+ggsave(paste0(overleaf, "/Map2_main_event.png"), width = 12, height = 6, units = "in")
+```
+
